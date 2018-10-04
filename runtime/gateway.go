@@ -111,7 +111,8 @@ type DefaultDependencies struct {
 	// Logger is a server-scoped logger
 	// Deprecated: Use ContextLogger instead.
 	Logger *zap.Logger
-
+	// ContextExtractor extracts context for scope and logs field
+	ContextExtractor ContextExtractor
 	// ContextLogger is a logger with request-scoped log fields
 	ContextLogger ContextLogger
 
@@ -268,7 +269,7 @@ func (gateway *Gateway) registerPredefined() error {
 	gateway.HTTPRouter.RegisterRaw("PUT", "/debug/loglevel", gateway.atomLevel.ServeHTTP)
 
 	err := gateway.HTTPRouter.Register("GET", "/health", NewRouterEndpoint(
-		gateway.Logger, gateway.AllHostScope, gateway.Tracer,
+		gateway.ContextExtractor, gateway.Logger, gateway.AllHostScope, gateway.Tracer,
 		"health", "health",
 		gateway.handleHealthRequest,
 	))

@@ -83,7 +83,7 @@ func (h *SimpleServiceAnotherCallHandler) Handle(
 				zap.String("stacktrace", stacktrace),
 				zap.String("endpoint", h.endpoint.EndpointID))
 
-			h.endpoint.Metrics.Panic.Inc(1)
+			h.endpoint.EndpointMetrics.Panic.Inc(1)
 			isSuccessful = false
 			response = nil
 			headers = nil

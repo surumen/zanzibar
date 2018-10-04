@@ -77,12 +77,13 @@ func InitializeDependenciesMock(
 	tree := &module.DependenciesTree{}
 
 	initializedDefaultDependencies := &zanzibar.DefaultDependencies{
-		ContextLogger: g.ContextLogger,
-		Logger:        g.Logger,
-		Scope:         g.AllHostScope,
-		Config:        g.Config,
-		Channel:       g.Channel,
-		Tracer:        g.Tracer,
+		ContextExtractor: g.ContextExtractor,
+		ContextLogger:    g.ContextLogger,
+		Logger:           g.Logger,
+		Scope:            g.AllHostScope,
+		Config:           g.Config,
+		Channel:          g.Channel,
+		Tracer:           g.Tracer,
 	}
 
 	mockClientNodes := &MockClientNodes{

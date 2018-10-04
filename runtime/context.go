@@ -56,8 +56,8 @@ const (
 
 const (
 	scopeFieldRequestMethod = "method"
-	scopeFieldEndpointID    = "endpointID"
-	scopeFieldHandlerID     = "handlerID"
+	scopeFieldEndpoint      = "endpointid"
+	scopeFieldHandler       = "handlerid"
 )
 
 const (

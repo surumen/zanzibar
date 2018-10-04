@@ -51,6 +51,7 @@ func TestTrailingSlashRoutes(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/foo",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,
@@ -68,6 +69,7 @@ func TestTrailingSlashRoutes(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/bar/",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,
@@ -192,6 +194,7 @@ func TestRouterPanic(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/panic",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,
@@ -254,6 +257,7 @@ func TestRouterPanicObject(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/panic",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,
@@ -316,6 +320,7 @@ func TestRouterPanicNilPointer(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/panic",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,
@@ -382,6 +387,7 @@ func TestConflictingRoutes(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/foo",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,
@@ -399,6 +405,7 @@ func TestConflictingRoutes(t *testing.T) {
 	err = bgateway.ActualGateway.HTTPRouter.Register(
 		"GET", "/foo",
 		zanzibar.NewRouterEndpoint(
+			bgateway.ActualGateway.ContextExtractor,
 			bgateway.ActualGateway.Logger,
 			bgateway.ActualGateway.AllHostScope,
 			bgateway.ActualGateway.Tracer,

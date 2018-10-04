@@ -51,15 +51,18 @@ type RouterEndpoint struct {
 	HandlerName  string
 	HandlerFn    HandlerFn
 
-	contextLogger ContextLogger
+	contextExtractor ContextExtractor
+	contextLogger    ContextLogger
 	// Deprecated: use contextLogger instead
-	logger  *zap.Logger
-	Metrics *InboundHTTPMetrics
-	tracer  opentracing.Tracer
+	logger          *zap.Logger
+	EndpointMetrics *EndpointMetrics
+	scope           tally.Scope
+	tracer          opentracing.Tracer
 }
 
 // NewRouterEndpoint creates an endpoint with all the necessary data
 func NewRouterEndpoint(
+	extractor ContextExtractor,
 	logger *zap.Logger,
 	scope tally.Scope,
 	tracer opentracing.Tracer,
@@ -67,18 +70,18 @@ func NewRouterEndpoint(
 	handlerID string,
 	handler HandlerFn,
 ) *RouterEndpoint {
-	scope = scope.Tagged(map[string]string{
-		"endpoint": endpointID,
-		"handler":  handlerID,
-	})
+	scopeFields := map[string]string{scopeFieldEndpoint: endpointID, scopeFieldHandler: handlerID}
+	scope = scope.Tagged(scopeFields)
 	return &RouterEndpoint{
-		EndpointName:  endpointID,
-		HandlerName:   handlerID,
-		HandlerFn:     handler,
-		contextLogger: NewContextLogger(logger),
-		logger:        logger,
-		Metrics:       NewInboundHTTPMetrics(scope),
-		tracer:        tracer,
+		EndpointName:     endpointID,
+		HandlerName:      handlerID,
+		HandlerFn:        handler,
+		contextExtractor: extractor,
+		contextLogger:    NewContextLogger(logger),
+		logger:           logger,
+		scope:            scope,
+		tracer:           tracer,
+		EndpointMetrics:  NewEndpointMetrics(scope),
 	}
 }
 
@@ -102,15 +105,21 @@ func (endpoint *RouterEndpoint) HandleRequest(
 		zap.String(logFieldHandlerID, endpoint.HandlerName),
 	)
 
-	scopeFields := map[string]string{scopeFieldEndpointID: endpoint.EndpointName, scopeFieldHandlerID: endpoint.HandlerName}
+	scopeFields := map[string]string{scopeFieldEndpoint: endpoint.EndpointName, scopeFieldHandler: endpoint.HandlerName}
 	ctx = WithScopeFields(ctx, scopeFields)
+	tags := GetScopeFieldsFromCtx(ctx)
+	endpoint.scope = endpoint.scope.Tagged(tags)
+
 	headers := map[string]string{}
 	for k, v := range r.Header {
 		headers[k] = v[0]
 	}
 
 	ctx = WithEndpointRequestHeadersField(ctx, headers)
+	tags = endpoint.contextExtractor.ExtractScopeTags(ctx)
+	endpoint.scope = endpoint.scope.Tagged(tags)
 	r = r.WithContext(ctx)
+
 	req := NewServerHTTPRequest(w, r, params, endpoint)
 
 	endpoint.HandlerFn(ctx, req, req.res)
@@ -131,11 +140,11 @@ type HTTPRouter struct {
 func NewHTTPRouter(gateway *Gateway) *HTTPRouter {
 	router := &HTTPRouter{
 		notFoundEndpoint: NewRouterEndpoint(
-			gateway.Logger, gateway.AllHostScope, gateway.Tracer,
+			gateway.ContextExtractor, gateway.Logger, gateway.AllHostScope, gateway.Tracer,
 			notFound, notFound, nil,
 		),
 		methodNotAllowedEndpoint: NewRouterEndpoint(
-			gateway.Logger, gateway.AllHostScope, gateway.Tracer,
+			gateway.ContextExtractor, gateway.Logger, gateway.AllHostScope, gateway.Tracer,
 			methodNotAllowed, methodNotAllowed, nil,
 		),
 		gateway:    gateway,
